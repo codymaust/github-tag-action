@@ -10,9 +10,9 @@ import {
   setRepository,
 } from './helper.test';
 
-jest.spyOn(core, 'debug').mockImplementation(() => {});
-jest.spyOn(core, 'info').mockImplementation(() => {});
-jest.spyOn(console, 'info').mockImplementation(() => {});
+jest.spyOn(core, 'debug').mockImplementation(() => { });
+jest.spyOn(core, 'info').mockImplementation(() => { });
+jest.spyOn(console, 'info').mockImplementation(() => { });
 
 beforeAll(() => {
   setRepository('https://github.com', 'org/repo');
@@ -24,7 +24,7 @@ const mockCreateTag = jest
 
 const mockSetOutput = jest
   .spyOn(core, 'setOutput')
-  .mockImplementation(() => {});
+  .mockImplementation(() => { });
 
 const mockSetFailed = jest.spyOn(core, 'setFailed');
 
@@ -310,6 +310,94 @@ describe('github-tag-action', () => {
         {
           message:
             'my commit message\nBREAKING CHANGE:\nthis is a breaking change',
+          hash: null,
+        },
+      ];
+      jest
+        .spyOn(utils, 'getCommits')
+        .mockImplementation(async (sha) => commits);
+
+      const validTags = [
+        {
+          name: 'v1.2.3',
+          commit: { sha: '012345', url: '' },
+          zipball_url: '',
+          tarball_url: 'string',
+          node_id: 'string',
+        },
+      ];
+      jest
+        .spyOn(utils, 'getValidTags')
+        .mockImplementation(async () => validTags);
+
+      /*
+       * When
+       */
+      await action();
+
+      /*
+       * Then
+       */
+      expect(mockCreateTag).toHaveBeenCalledWith(
+        'v2.0.0',
+        expect.any(Boolean),
+        expect.any(String)
+      );
+      expect(mockSetFailed).not.toBeCalled();
+    });
+
+    it('does not create major tag when using default preset and bang(!) is present on prefix', async () => {
+      /*
+       * Given
+       */
+      setInput('commit_analyzer_preset', '');
+      const commits = [
+        {
+          message: 'feat!: this is a breaking change',
+          hash: null,
+        },
+      ];
+      jest
+        .spyOn(utils, 'getCommits')
+        .mockImplementation(async (sha) => commits);
+
+      const validTags = [
+        {
+          name: 'v1.2.3',
+          commit: { sha: '012345', url: '' },
+          zipball_url: '',
+          tarball_url: 'string',
+          node_id: 'string',
+        },
+      ];
+      jest
+        .spyOn(utils, 'getValidTags')
+        .mockImplementation(async () => validTags);
+
+      /*
+       * When
+       */
+      await action();
+
+      /*
+       * Then
+       */
+      expect(mockCreateTag).toHaveBeenCalledWith(
+        'v1.2.4',
+        expect.any(Boolean),
+        expect.any(String)
+      );
+      expect(mockSetFailed).not.toBeCalled();
+    });
+
+    it('does create major tag when using conventionalcommits preset and bang(!) is present on prefix', async () => {
+      /*
+       * Given
+       */
+      setInput('commit_analyzer_preset', 'conventionalcommits');
+      const commits = [
+        {
+          message: 'feat!: this is a breaking change',
           hash: null,
         },
       ];
