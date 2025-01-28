@@ -10,9 +10,9 @@ import {
   setRepository,
 } from './helper.test';
 
-jest.spyOn(core, 'debug').mockImplementation(() => { });
-jest.spyOn(core, 'info').mockImplementation(() => { });
-jest.spyOn(console, 'info').mockImplementation(() => { });
+jest.spyOn(core, 'debug').mockImplementation(() => {});
+jest.spyOn(core, 'info').mockImplementation(() => {});
+jest.spyOn(console, 'info').mockImplementation(() => {});
 
 beforeAll(() => {
   setRepository('https://github.com', 'org/repo');
@@ -24,7 +24,7 @@ const mockCreateTag = jest
 
 const mockSetOutput = jest
   .spyOn(core, 'setOutput')
-  .mockImplementation(() => { });
+  .mockImplementation(() => {});
 
 const mockSetFailed = jest.spyOn(core, 'setFailed');
 
